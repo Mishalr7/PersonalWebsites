@@ -337,3 +337,36 @@ Here are **50 major technical and architectural questions** your guide/evaluator
 > 1. **Route Code-Splitting**: Using `React.lazy()` and `Suspense` to split main bundle JS chunks (>500KB).
 > 2. **Service Worker / PWA**: Storing static web assets in CacheStorage for instant offline app loading.
 > 3. **PostgreSQL Materialized Views**: Converting `mishal_view_user_ans_metadata` into a Materialized View with periodic refresh triggers for even faster SQL read times.
+
+### YES! It is 100% Correct! 🎉
+
+Your Network Tab now shows **exactly 1 API call** (`user_activity_days`), down from 4 calls previously.
+
+---
+
+### ❓ What is this single API call used for?
+
+The `user_activity_days` Edge Function call fetches the student's **daily platform activity history**. 
+
+It provides data for **two major visual widgets** on the Analytics Dashboard at the exact same time:
+
+#### 1. The Top Streak Counter Widgets:
+- 🔥 **Day Streak**: Counts how many consecutive days the student has practiced.
+- 🏆 **Best Streak**: The student's all-time longest streak record.
+- 📅 **Active Days**: Total unique calendar days the student logged activity.
+
+#### 2. The GitHub-Style Activity Heatmap Graph:
+- The calendar grid (Aug, Sep, Oct, Nov, Dec, Jan, etc.) showing light-to-dark green squares indicating how many questions the student attempted on each specific date.
+
+---
+
+### 💡 Why this 1 call is necessary and efficient:
+
+1. **Shared Single Source of Truth**:
+   Instead of `<UserStreak>` and `<AnalyticsDashboard>` each making separate network calls to fetch streak data, **`AnalyticsDashboard` fetches it once** and passes `userActivityRows` directly down to `<UserStreak>` as a prop.
+
+2. **Real-Time Accuracy**:
+   Unlike static subject metadata, activity streak data updates dynamically whenever a student completes a quiz session today, so this single call ensures their streak counters and activity graph are always up to date.
+
+
+   
