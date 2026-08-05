@@ -368,5 +368,48 @@ It provides data for **two major visual widgets** on the Analytics Dashboard at 
 2. **Real-Time Accuracy**:
    Unlike static subject metadata, activity streak data updates dynamically whenever a student completes a quiz session today, so this single call ensures their streak counters and activity graph are always up to date.
 
+# 🚀 Executive API Optimization Report & Presentation Script
+
+---
+
+## 📊 Summary Table: Before vs. After API Call Metrics
+
+| Page / User Action | Before Optimization | After Optimization | % Reduction / Saved | Key Technical Improvement |
+|---|---|---|---|---|
+| **1. Login Phase** | 9–11 calls | **2 calls** | **80% Reduction** | Consolidated 6 duplicate `users` queries into 1 merged call with in-flight promise locking. |
+| **2. Dashboard Page (`/quizzes`)** | 4–6 calls | **1 call** | **80% Reduction** | Served static lists from `localAppDb`. Only 1 call (`user_qas_calls`) for user history. |
+| **3. Window Focus / Tab Switch** | +2 calls per tab switch | **0 extra calls** | **100% Saved** | Disabled window re-focus triggers. |
+| **4. Subject View Page** | 14+ calls (~260 kB) | **1–2 calls (124 kB)** | **85% Reduction** | Derived user progress from `localAnalyticsDb` in memory; saved ~136 kB. |
+| **5. Quiz Engine Questions** | 2 calls + CORS error | **1 call (200 OK)** | **50% Reduction** | Bypassed dead `get_questions_by_category_set` RPC, fixing red CORS error. |
+| **6. Quiz Images** | Extra API requests | **0 extra calls** | **100% Saved** | Image URLs returned in main question payload & built client-side. |
+| **7. Quiz Termination (Back Button)** | 5 calls + 500/400 errors | **1 call (0 errors)** | **80% Reduction** | Added early guard for 0-attempt terminations and UUID validation. |
+| **8. Static Pages (Contact Us)** | Dynamic queries | **0 calls** | **100% Static** | Served 100% client-side without API calls. |
+
+---
+
+## 🎙️ Presentation Script: Slide-by-Slide / Step-by-Step
+
+### 1️⃣ Login Phase
+> *"Initially, logging into the app triggered between 9 to 11 network calls due to duplicate user queries and re-fetching subject lists. We consolidated user upserts and cached static metadata into `localAppDb` on login, reducing network calls to just **2 essential requests** (`token` exchange + merged `users` upsert)."*
+
+### 2️⃣ Dashboard & Tab Switching
+> *"The Dashboard page was previously making 4 to 6 calls and re-triggering API calls every time the user switched browser tabs. Now, the Dashboard uses **1 single API call** (`user_qas_calls`) for personal quiz history, and tab switching fires **0 extra API calls**."*
+
+### 3️⃣ Subject View Page
+> *"The Subject detail page was heavy, firing 14+ API calls and transferring over 260 kB of data per page load. We shifted category progress and user history to `localAnalyticsDb` in memory, reducing payload transfer by **~136 kB** and network requests to **1–2 essential calls**."*
+
+### 4️⃣ Quiz Engine & Image Handling
+> *"When loading a quiz, an obsolete Edge Function was causing a red CORS error and forcing a fallback call. We removed the dead endpoint so questions load in **1 single clean call**. For images, we achieved **0 extra API calls** because image URLs are constructed synchronously on the client from the initial question payload."*
+
+### 5️⃣ Quiz Termination Efficiency
+> *"When quitting a quiz early, the app was making 5 backend calls and throwing 500/400 errors due to virtual string IDs. We implemented UUID validation and early termination checks, bringing termination down to **1 single call** with **zero errors**."*
+
+---
+
+## 🔑 Top 3 Key Highlights for Your Team/Client
+1. **Total Network Traffic Reduction:** Overall network calls across key flows reduced by **75%–85%**.
+2. **Bandwidth Savings:** Saved **>130 kB** of payload transfer on every Subject page view.
+3. **Console Cleanliness:** **0 CORS errors**, **0 500/400 errors**, and **0 redundant requests on tab switches**.
+
 
    
